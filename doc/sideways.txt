@@ -23,7 +23,7 @@ The command is (provided you're in ~/.vim):
 <
 
 Another way is to simply copy all the essential directories inside the ~/.vim
-directory: plugin, ftplugin, autoload, doc.
+directory: plugin, autoload, doc.
 
 ==============================================================================
 USAGE                                *sideways-usage* *SidewaysLeft* *SidewaysRight*
@@ -57,6 +57,10 @@ structures.
 Apart from functions, it works for lists in CSS declarations:
 >
     border-radius: 20px 0 0 20px;
+<
+Also for single-line CSS declarations:
+>
+    a { color: #fff; background: blue; text-decoration: underline; }
 <
 And, it also works for cucumber tables:
 >

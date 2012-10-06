@@ -11,40 +11,9 @@
 "
 "   [ [14, 16], [19, 21] ]
 "
-function! sideways#parsing#Parse()
-  let definitions =
-        \ [
-        \   {
-        \     'start':     '\k(',
-        \     'end':       ')',
-        \     'delimiter': '^,\s*',
-        \     'skip':      '^\s',
-        \     'brackets':  ['([''"', ')]''"']
-        \   },
-        \   {
-        \     'start':     '\[',
-        \     'end':       '\]',
-        \     'delimiter': '^,\s*',
-        \     'skip':      '^\s',
-        \     'brackets':  ['([''"', ')]''"']
-        \   },
-        \   {
-        \     'start':     '\k:\s*',
-        \     'end':       ';',
-        \     'delimiter': '^\s',
-        \     'skip':      '^\s',
-        \     'brackets':  ['(''"', ')''"']
-        \   },
-        \   {
-        \     'start':     '^\s*|',
-        \     'end':       '|$',
-        \     'delimiter': '^|',
-        \     'skip':      '^$',
-        \     'brackets':  ['(''"', ')''"']
-        \   },
-        \ ]
-
-  let items = []
+function! sideways#parsing#Parse(definitions)
+  let definitions = a:definitions
+  let items       = []
 
   for definition in definitions
     let start_pattern     = definition.start
@@ -54,7 +23,7 @@ function! sideways#parsing#Parse()
 
     let [opening_brackets, closing_brackets] = definition.brackets
 
-    normal! zR
+    silent! normal! zO
     call sideways#util#PushCursor()
 
     if searchpair(start_pattern, '', end_pattern, 'bW', '', line('.')) <= 0
@@ -67,34 +36,41 @@ function! sideways#parsing#Parse()
     normal! l
 
     let current_item = [col('.'), -1]
-
     let remainder_of_line = s:RemainderOfLine()
 
+    " TODO (2012-09-07) Figure out how to work with RemainderOfLine
     while s:RemainderOfLine() !~ '^'.end_pattern
       let remainder_of_line = s:RemainderOfLine()
       let bracket_match = s:BracketMatch(remainder_of_line, opening_brackets)
 
       if bracket_match >= 0
+        " then try to jump to the closing bracket
+        let opening_bracket = opening_brackets[bracket_match]
         let closing_bracket = closing_brackets[bracket_match]
 
-        if search('\V'.closing_bracket, 'W', line('.')) <= 0
-          continue
-        else
-          normal! l
-        endif
+        call searchpair('\V'.opening_bracket, '', '\V'.closing_bracket, 'W', '', line('.'))
+        " move rightwards regardless of the result
+        normal! l
       elseif remainder_of_line =~ delimiter_pattern
+        " then store the current item
         let current_item[1] = col('.') - 1
         call add(items, current_item)
 
         normal! l
+
+        " skip some whitespace TODO consider removing
         while s:RemainderOfLine() =~ skip_pattern
           normal! l
         endwhile
+
+        " initialize a new "current item"
         let current_item = [col('.'), -1]
       elseif col('.') == col('$') - 1
+        " then we're at the end of the line, finish up
         let current_item[1] = col('$') - 1
         break
       else
+        " move rightwards
         normal! l
       endif
     endwhile
