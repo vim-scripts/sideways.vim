@@ -1,3 +1,5 @@
+*sideways.txt*	Move an item in a delimiter-separated list left or right
+
 ==============================================================================
 CONTENTS                                           *sideways* *sideways-contents*
 
@@ -46,15 +48,21 @@ various other cases and it's intended to make the process configurable. While
 this particular example is in python, this should work for arguments in many
 different languages that use round braces to denote function calls.
 
+For ruby and eruby, it detects method calls without braces as well:
+>
+    link_to user_registration_path, 'Something'
+    # changes to:
+    link_to 'Something', user_registration_path
+<
 Apart from functions, it works for square-bracket lists in dynamic languages:
 >
     list = [one, [two, four, five], three]
 <
-Notice that, if you experiment with this example, you'll find that you can
-move the entire second list around. The plugin takes into consideration nested
-structures.
+If you experiment with this example, you'll find that you can move the entire
+second list around, as long as the cursor is on one of the inner brackets. The
+plugin takes into consideration nested structures.
 
-Apart from functions, it works for lists in CSS declarations:
+It works for lists in CSS declarations:
 >
     border-radius: 20px 0 0 20px;
 <
@@ -71,16 +79,35 @@ And, it also works for cucumber tables:
       | 0       | 40      | add    | 40     |
 <
 
-It's highly suggested to map the two commands to convenient keys. For example,
-mapping them to <c-h> and <c-l> would look like this:
+It's highly recommended to map the two commands to convenient keys. For
+example, mapping them to <c-h> and <c-l> would look like this:
 >
     nnoremap <c-h> :SidewaysLeft<cr>
     nnoremap <c-l> :SidewaysRight<cr>
 <
 
-The plugin is intended to be highly customizable. In the future, it should be
-able to work with ruby function arguments and it may also contain an "argument"
-text object (since the machinery to detect arguments is already there).
+The plugin is intended to be customizable, though at this point you'd need to
+look at the source to do this.
+
+Bonus functionality: ~
+
+The plugin's machinery makes it easy to implement an "argument" text object.
+There are two mappings provided:
+>
+    <Plug>SidewaysArgumentTextobjA
+    <Plug>SidewaysArgumentTextobjI
+<
+These are the outer and inner text objects, respectively. To use them, you
+need to create mappings in your configuration files. Something like this:
+>
+    omap aa <Plug>SidewaysArgumentTextobjA
+    xmap aa <Plug>SidewaysArgumentTextobjA
+    omap ia <Plug>SidewaysArgumentTextobjI
+    xmap ia <Plug>SidewaysArgumentTextobjI
+<
+This will map the "a" text object to operate on an "argument". So, you can
+perform `daa` to delete an argument, `cia` to change an argument, and so on.
+See |text-objects| for more information.
 
 ==============================================================================
 ISSUES                                                        *sideways-issues*

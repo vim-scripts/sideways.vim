@@ -37,5 +37,5 @@ It's highly suggested to map the two commands to convenient keys. For example, m
     nnoremap <c-h> :SidewaysLeft<cr>
     nnoremap <c-l> :SidewaysRight<cr>
 
-The plugin is intended to be highly customizable, eventually. In the future, it should be able to work with ruby function arguments and it may also contain an "argument" text object (since the machinery to detect arguments is already there).
+The plugin is intended to be customizable, though at this point you'd need to look at the source to do this.
 

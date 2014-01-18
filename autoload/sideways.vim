@@ -21,7 +21,6 @@ function! sideways#Left(definitions)
   endif
 
   call s:Swap(first, second, new_cursor_column)
-  silent! call repeat#set(":call sideways#Left()\<cr>")
   return 1
 endfunction
 
@@ -48,8 +47,39 @@ function! sideways#Right(definitions)
   endif
 
   call s:Swap(first, second, new_cursor_column)
-  silent! call repeat#set(":call sideways#Right()\<cr>")
   return 1
+endfunction
+
+function! sideways#AroundCursor(definitions)
+  let items = sideways#parsing#Parse(a:definitions)
+  if empty(items)
+    return []
+  end
+
+  let current_index = s:FindActiveItem(items)
+  let current       = items[current_index]
+
+  if current_index == 0
+    let previous = []
+  else
+    let previous = items[current_index - 1]
+  endif
+
+  if current_index == len(items) - 1
+    let next = []
+  else
+    let next = items[current_index + 1]
+  endif
+
+  return [previous, current, next]
+endfunction
+
+function! sideways#Definitions()
+  if exists('b:sideways_definitions')
+    return extend(copy(g:sideways_definitions), b:sideways_definitions)
+  else
+    return g:sideways_definitions
+  endif
 endfunction
 
 " Swaps the a:first and a:second items in the buffer. Both first arguments are

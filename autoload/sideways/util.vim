@@ -33,6 +33,17 @@ function! sideways#util#PopCursor()
   call setpos('.', remove(b:cursor_position_stack, -1))
 endfunction
 
+" function! sideways#util#DropCursor() {{{2
+"
+" Drops the last cursor location from the stack.
+function! sideways#util#DropCursor()
+  if !exists('b:cursor_position_stack')
+    let b:cursor_position_stack = []
+  endif
+
+  call remove(b:cursor_position_stack, -1)
+endfunction
+
 " function! sideways#util#PeekCursor() {{{2
 "
 " Returns the last saved cursor position from the cursor stack.
@@ -73,23 +84,12 @@ endfunction
 "
 " Replace the area defined by the 'start' and 'end' columns on the current
 " line with 'text'
-"
-" TODO Multibyte characters break it
 function! sideways#util#ReplaceCols(start, end, text)
-  let start    = a:start - 1
-  let interval = a:end - a:start
+  let line_offset = line2byte('.')
+  let start_byte  = line_offset + a:start - 1
+  let end_byte    = line_offset + a:end - 1
 
-  if start > 0 && interval > 0
-    let motion = '0'.start.'lv'.interval.'l'
-  elseif start > 0
-    let motion = '0'.start.'lv'
-  elseif interval > 0
-    let motion = '0v'.interval.'l'
-  else
-    return 0
-  endif
-
-  call sideways#util#ReplaceMotion(motion, a:text)
+  call sideways#util#ReplaceMotion(start_byte.'gov'.end_byte.'go', a:text)
   return 1
 endfunction
 
@@ -124,4 +124,16 @@ endfunction
 " Retrieve the text from columns "start" to "end" on the current line.
 function! sideways#util#GetCols(start, end)
   return strpart(getline('.'), a:start - 1, a:end - a:start + 1)
+endfunction
+
+" Positioning the cursor {{{1
+"
+
+" function! sideways#util#SetCol(col) {{{2
+"
+" Positions the cursor at the given column.
+function! sideways#util#SetCol(col)
+  let position = getpos('.')
+  let position[2] = a:col
+  call setpos('.', position)
 endfunction
