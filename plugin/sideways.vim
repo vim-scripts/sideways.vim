@@ -2,7 +2,7 @@ if exists("g:loaded_sideways") || &cp
   finish
 endif
 
-let g:loaded_sideways = '0.1.0' " version number
+let g:loaded_sideways = '0.2.0' " version number
 let s:keepcpo = &cpo
 set cpo&vim
 
@@ -13,31 +13,68 @@ let g:sideways_definitions =
       \     'end':       '\s*)',
       \     'delimiter': '^,\s*',
       \     'skip':      '^\s',
-      \     'brackets':  ['([{''"', ')]}''"']
+      \     'brackets':  ['([{''"', ')]}''"'],
       \   },
       \   {
       \     'start':     '\[\s*',
       \     'end':       '\s*\]',
       \     'delimiter': '^,\s*',
       \     'skip':      '^\s',
-      \     'brackets':  ['([''"', ')]''"']
+      \     'brackets':  ['([''"', ')]''"'],
+      \   },
+      \   {
+      \     'start':     '{\s*',
+      \     'end':       '\s*}',
+      \     'delimiter': '^,\s*',
+      \     'skip':      '^\s',
+      \     'brackets':  ['([{''"', ')]}''"'],
       \   },
       \   {
       \     'start':     '\<if\s*',
       \     'end':       '^$',
       \     'delimiter': '^\s*\(and\|or\|||\|&&\)\s*',
       \     'skip':      '^\s',
-      \     'brackets':  ['([''"', ')]''"']
+      \     'brackets':  ['([''"', ')]''"'],
       \   },
       \ ]
 
 autocmd FileType ruby let b:sideways_definitions = [
       \   {
-      \     'start':     '\k\{1,} ',
-      \     'end':       '$',
-      \     'delimiter': '^,\s*',
-      \     'skip':      '^\s',
-      \     'brackets':  ['([''"', ')]''"']
+      \     'skip_syntax': ['rubyString', 'rubyComment'],
+      \     'start':       '\k\{1,}[?!]\= ',
+      \     'end':         '\s*\%(\<do\>\|#\|$\)',
+      \     'delimiter':   '^,\s*',
+      \     'skip':        '^\s',
+      \     'brackets':    ['([{''"', ')]}''"'],
+      \   },
+      \ ]
+
+autocmd FileType coffee let b:sideways_definitions = [
+      \   {
+      \     'skip_syntax': ['coffeeString', 'coffeeComment'],
+      \     'start':       '\k\{1,} ',
+      \     'end':         '\%(,\s*[-=]>\|\s*#\|$\)',
+      \     'delimiter':   '^,\s*',
+      \     'skip':        '^\s',
+      \     'brackets':    ['([''"', ')]''"'],
+      \   },
+      \ ]
+
+autocmd FileType haml let b:sideways_definitions = [
+      \   {
+      \     'skip_syntax': ['rubyString'],
+      \     'start':       '\k\{1,} ',
+      \     'end':         '\s*\%(\<do\>\|#\|$\)',
+      \     'delimiter':   '^,\s*',
+      \     'skip':        '^\s',
+      \     'brackets':    ['([''"', ')]''"'],
+      \   },
+      \   {
+      \     'start':     '^[^.]*\.',
+      \     'end':       '\%(\k\|\.\)\@!',
+      \     'delimiter': '^\.',
+      \     'skip':      '',
+      \     'brackets':  ['', ''],
       \   },
       \ ]
 
@@ -47,7 +84,17 @@ autocmd FileType eruby let b:sideways_definitions = [
       \     'end':       '\s*%>',
       \     'delimiter': '^,\s*',
       \     'skip':      '^\s',
-      \     'brackets':  ['([''"', ')]''"']
+      \     'brackets':  ['([''"', ')]''"'],
+      \   },
+      \ ]
+
+autocmd FileType html let b:sideways_definitions = [
+      \   {
+      \     'start':     '<\k\+\s\+',
+      \     'end':       '\s*/\?>',
+      \     'delimiter': '^\s\+',
+      \     'skip':      '^\s',
+      \     'brackets':  ['"', '"'],
       \   },
       \ ]
 
@@ -57,7 +104,7 @@ autocmd FileType go let b:sideways_definitions = [
       \     'end':       '\s*}',
       \     'delimiter': '^,\s*',
       \     'skip':      '^\s',
-      \     'brackets':  ['([''"', ')]''"']
+      \     'brackets':  ['([''"', ')]''"'],
       \   },
       \ ]
 
@@ -67,14 +114,14 @@ autocmd FileType css,scss,less let b:sideways_definitions = [
       \     'end':       ';',
       \     'delimiter': '^\s',
       \     'skip':      '^\s',
-      \     'brackets':  ['(''"', ')''"']
+      \     'brackets':  ['(''"', ')''"'],
       \   },
       \   {
       \     'start':     '{\s*',
       \     'end':       ';\=\s*}',
       \     'delimiter': '^;\s*',
       \     'skip':      '^\s',
-      \     'brackets':  ['(''"', ')''"']
+      \     'brackets':  ['(''"', ')''"'],
       \   },
       \ ]
 
@@ -84,12 +131,15 @@ autocmd FileType cucumber let b:sideways_definitions = [
       \     'end':       '|$',
       \     'delimiter': '^|',
       \     'skip':      '^$',
-      \     'brackets':  ['(''"', ')''"']
+      \     'brackets':  ['(''"', ')''"'],
       \   },
       \ ]
 
-command! SidewaysLeft  call sideways#Left(sideways#Definitions())  | silent! call repeat#set(":SidewaysLeft\<cr>")
-command! SidewaysRight call sideways#Right(sideways#Definitions()) | silent! call repeat#set(":SidewaysRight\<cr>")
+command! SidewaysLeft  call sideways#MoveLeft()  | silent! call repeat#set(":SidewaysLeft\<cr>")
+command! SidewaysRight call sideways#MoveRight() | silent! call repeat#set(":SidewaysRight\<cr>")
+
+command! SidewaysJumpLeft  call sideways#JumpLeft()
+command! SidewaysJumpRight call sideways#JumpRight()
 
 onoremap <Plug>SidewaysArgumentTextobjA :<c-u>call sideways#textobj#Argument('a')<cr>
 xnoremap <Plug>SidewaysArgumentTextobjA :<c-u>call sideways#textobj#Argument('a')<cr>

@@ -1,5 +1,15 @@
-function! sideways#Left(definitions)
-  let items = sideways#parsing#Parse(a:definitions)
+function! sideways#Parse()
+  if exists('b:sideways_definitions')
+    let definitions = extend(copy(g:sideways_definitions), b:sideways_definitions)
+  else
+    let definitions = g:sideways_definitions
+  endif
+
+  return sideways#parsing#Parse(definitions)
+endfunction
+
+function! sideways#MoveLeft()
+  let items = sideways#Parse()
   if empty(items)
     return 0
   end
@@ -24,8 +34,8 @@ function! sideways#Left(definitions)
   return 1
 endfunction
 
-function! sideways#Right(definitions)
-  let items = sideways#parsing#Parse(a:definitions)
+function! sideways#MoveRight()
+  let items = sideways#Parse()
   if empty(items)
     return 0
   end
@@ -50,8 +60,67 @@ function! sideways#Right(definitions)
   return 1
 endfunction
 
-function! sideways#AroundCursor(definitions)
-  let items = sideways#parsing#Parse(a:definitions)
+function! sideways#JumpLeft()
+  let items = sideways#Parse()
+  if empty(items)
+    return 0
+  end
+
+  let last_index   = len(items) - 1
+  let active_index = s:FindActiveItem(items)
+  if active_index < 0
+    return 0
+  endif
+
+  if active_index == 0
+    let first             = items[active_index]
+    let second            = items[last_index]
+    let new_cursor_column = second[0]
+  else
+    let first             = items[active_index - 1]
+    let second            = items[active_index]
+    let new_cursor_column = first[0]
+  endif
+
+  let position = getpos('.')
+  let position[2] = new_cursor_column
+  call setpos('.', position)
+
+  return 1
+endfunction
+
+function! sideways#JumpRight()
+  let items = sideways#Parse()
+
+  if empty(items)
+    return 0
+  end
+
+  let last_index   = len(items) - 1
+  let active_index = s:FindActiveItem(items)
+  if active_index < 0
+    return 0
+  endif
+
+  if active_index == last_index
+    let first             = items[0]
+    let second            = items[last_index]
+    let new_cursor_column = first[0]
+  else
+    let first             = items[active_index]
+    let second            = items[active_index + 1]
+    let new_cursor_column = second[0]
+  endif
+
+  let position = getpos('.')
+  let position[2] = new_cursor_column
+  call setpos('.', position)
+
+  return 1
+endfunction
+
+function! sideways#AroundCursor()
+  let items = sideways#Parse()
   if empty(items)
     return []
   end
@@ -72,14 +141,6 @@ function! sideways#AroundCursor(definitions)
   endif
 
   return [previous, current, next]
-endfunction
-
-function! sideways#Definitions()
-  if exists('b:sideways_definitions')
-    return extend(copy(g:sideways_definitions), b:sideways_definitions)
-  else
-    return g:sideways_definitions
-  endif
 endfunction
 
 " Swaps the a:first and a:second items in the buffer. Both first arguments are
